@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DatabaseOrderTableRow } from "@/types";
+import { DatabaseOrderTableRow, AIOrderData } from "@/types";
 import { getOrders } from "@/lib/data/orders";
 import { AutoRefresh } from "@/components/auto-refresh";
 import {
@@ -135,9 +135,9 @@ export default async function OrdersPage() {
   const orders = await getOrders();
 
   // Helper function to clean and parse order_data (optimized - no logging)
-  function parseOrderData(data: unknown): object | null {
+  function parseOrderData(data: unknown): Partial<AIOrderData> | null {
     if (!data) return null;
-    if (typeof data === 'object') return data as object;
+    if (typeof data === 'object') return data as Partial<AIOrderData>;
     if (typeof data !== 'string') return null;
     
     let str = data.trim();
@@ -147,14 +147,14 @@ export default async function OrdersPage() {
     }
     
     try {
-      return JSON.parse(str);
+      return JSON.parse(str) as Partial<AIOrderData>;
     } catch {
       return null;
     }
   }
 
   // Parse order_data for all orders
-  const parsedOrders = orders.map(order => {
+  const parsedOrders: DatabaseOrderTableRow[] = orders.map(order => {
     const orderData = parseOrderData(order.order_data);
     
     return {
@@ -165,7 +165,7 @@ export default async function OrdersPage() {
         transport_details: {},
         goederen: []
       }
-    };
+    } as DatabaseOrderTableRow;
   });
 
   // Group orders by status

@@ -45,5 +45,5 @@ export interface LocatieDetails {
     email_message_id: string | null; // Uniek email ID voor deduplicatie (n8n)
     email_body: string | null; // De volledige email tekst (optioneel)
     pdf_url: string | null; // De link naar de PDF in Supabase Storage
-    order_data: AIOrderData; // De JSONB kolom met de data hierboven
+    order_data: AIOrderData | Partial<AIOrderData> | null; // De JSONB kolom - kan leeg/partial zijn
   }
