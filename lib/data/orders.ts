@@ -8,7 +8,7 @@ import { DatabaseOrderTableRow } from '@/types';
 export async function getOrders(limit: number = 100): Promise<DatabaseOrderTableRow[]> {
   const { data, error } = await supabase
     .from('orders')
-    .select('id, created_at, status, klant_email, email_onderwerp, order_data')
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(limit);
 
