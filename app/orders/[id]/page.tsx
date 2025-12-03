@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById } from "@/lib/data/orders";
+import { AIOrderData } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -104,12 +105,7 @@ export default async function OrderPage({ params }: PageProps) {
 
   // Safely access nested data with fallbacks
   const parsedData = parseOrderData(order.order_data);
-  const orderData = (parsedData as typeof order.order_data) || {
-    laad_locatie: {},
-    los_locatie: {},
-    transport_details: {},
-    goederen: [],
-  };
+  const orderData: AIOrderData = (parsedData as AIOrderData) || {};
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] w-full overflow-hidden">

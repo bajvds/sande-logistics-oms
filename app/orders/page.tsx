@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DatabaseOrderTableRow, AIOrderData } from "@/types";
+import { DatabaseOrderTableRow } from "@/types";
 import { getOrders } from "@/lib/data/orders";
 import { AutoRefresh } from "@/components/auto-refresh";
 import {
@@ -135,9 +135,9 @@ export default async function OrdersPage() {
   const orders = await getOrders();
 
   // Helper function to clean and parse order_data (optimized - no logging)
-  function parseOrderData(data: unknown): Partial<AIOrderData> | null {
+  function parseOrderData(data: unknown): object | null {
     if (!data) return null;
-    if (typeof data === 'object') return data as Partial<AIOrderData>;
+    if (typeof data === 'object') return data as object;
     if (typeof data !== 'string') return null;
     
     let str = data.trim();
@@ -147,26 +147,17 @@ export default async function OrdersPage() {
     }
     
     try {
-      return JSON.parse(str) as Partial<AIOrderData>;
+      return JSON.parse(str);
     } catch {
       return null;
     }
   }
 
   // Parse order_data for all orders
-  const parsedOrders: DatabaseOrderTableRow[] = orders.map(order => {
-    const orderData = parseOrderData(order.order_data);
-    
-    return {
-      ...order,
-      order_data: orderData || {
-        laad_locatie: {},
-        los_locatie: {},
-        transport_details: {},
-        goederen: []
-      }
-    } as DatabaseOrderTableRow;
-  });
+  const parsedOrders: DatabaseOrderTableRow[] = orders.map(order => ({
+    ...order,
+    order_data: parseOrderData(order.order_data) || {}
+  }));
 
   // Group orders by status
   // Note: n8n creates orders with status "Review", we also support "Nieuw"
