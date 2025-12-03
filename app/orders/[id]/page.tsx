@@ -41,7 +41,7 @@ function displayValue(value: string | number | null | undefined): string {
 }
 
 // Helper to format date for display
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null | undefined): string {
   if (!dateString || dateString === "NULL") return "-";
   try {
     const date = new Date(dateString);

@@ -25,7 +25,7 @@ function getDebiteurFromEmail(email: string | null): string {
 }
 
 // Helper function to format date
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString("nl-NL", {
@@ -36,13 +36,13 @@ function formatDate(dateString: string | null): string {
 }
 
 // Helper function to format time
-function formatTime(timeString: string | null): string {
+function formatTime(timeString: string | null | undefined): string {
   if (!timeString || timeString === "00:00") return "-";
   return timeString;
 }
 
 // Helper to format datetime for table
-function formatDateTime(dateStr: string | null, timeStr: string | null): string {
+function formatDateTime(dateStr: string | null | undefined, timeStr: string | null | undefined): string {
   const date = formatDate(dateStr);
   const time = formatTime(timeStr);
   if (date === "-" && time === "-") return "-";
