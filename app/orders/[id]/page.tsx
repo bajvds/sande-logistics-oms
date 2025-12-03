@@ -1,59 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOrderById } from "@/lib/data/orders";
-import { AIOrderData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { OrderActions } from "./order-actions";
-
-// Helper function to get debiteur name from email
-function getDebiteurFromEmail(email: string | null): string {
-  if (!email) return "-";
-  if (email.includes("hittra")) return "Hittra";
-  if (email.includes("gmail")) return "Gmail";
-  if (email.includes("pgm")) return "Pgm";
-  if (email.includes("pure-and-noble")) return "Pure-And-Noble";
-  return email.split("@")[0];
-}
-
-// Status badge variant helper
-function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
-  switch (status) {
-    case "Review":
-    case "Nieuw":
-      return "default";
-    case "In Behandeling":
-      return "secondary";
-    case "Verwerkt":
-      return "outline";
-    default:
-      return "default";
-  }
-}
-
-// Helper to safely display values
-function displayValue(value: string | number | null | undefined): string {
-  if (value === null || value === undefined || value === "NULL") return "-";
-  return String(value);
-}
-
-// Helper to format date for display
-function formatDate(dateString: string | null | undefined): string {
-  if (!dateString || dateString === "NULL") return "-";
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("nl-NL", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  } catch {
-    return dateString;
-  }
-}
+import { OrderForm } from "./order-form";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -72,40 +24,6 @@ export default async function OrderPage({ params }: PageProps) {
   if (!order) {
     notFound();
   }
-
-  // Helper function to clean and parse order_data
-  function parseOrderData(data: unknown): object | null {
-    if (!data) return null;
-    
-    // If it's already an object, return it
-    if (typeof data === 'object' && data !== null) {
-      return data as object;
-    }
-    
-    // If it's a string, clean it and parse
-    if (typeof data === 'string') {
-      let cleanedData = data.trim();
-      
-      // Remove markdown code blocks (```json ... ``` or ``` ... ```)
-      if (cleanedData.startsWith('```')) {
-        cleanedData = cleanedData.replace(/^```(?:json)?\s*\n?/, '');
-        cleanedData = cleanedData.replace(/\n?```\s*$/, '');
-      }
-      
-      try {
-        return JSON.parse(cleanedData);
-      } catch (e) {
-        console.error('Failed to parse order_data:', e);
-        return null;
-      }
-    }
-    
-    return null;
-  }
-
-  // Safely access nested data with fallbacks
-  const parsedData = parseOrderData(order.order_data);
-  const orderData: AIOrderData = (parsedData as AIOrderData) || {};
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] w-full overflow-hidden">
@@ -188,7 +106,7 @@ export default async function OrderPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* Right Column: Form (Scrollable) */}
+      {/* Right Column: Editable Form (Scrollable) */}
       <div className="flex w-full flex-col overflow-y-auto lg:w-1/2 bg-gray-50">
         <div className="flex-1 p-6">
           {/* Header with Actions */}
@@ -211,161 +129,8 @@ export default async function OrderPage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="space-y-4">
-            {/* ALGEMEEN & LADEN side by side */}
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-              {/* ALGEMEEN */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-green-700 text-base border-l-4 border-green-700 pl-3">
-                    ALGEMEEN
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Debiteur</Label>
-                      <p className="text-sm font-medium">{getDebiteurFromEmail(order.klant_email)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Transport type</Label>
-                      <p className="text-sm font-medium">{displayValue(orderData.transport_details?.transport_type)}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Status</Label>
-                      <div className="mt-1">
-                        <Badge variant={getStatusVariant(order.status)}>
-                          {order.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Email</Label>
-                      <p className="text-sm font-medium truncate">{displayValue(order.klant_email)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* LADEN */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-green-700 text-base border-l-4 border-green-700 pl-3">
-                    LADEN
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Datum laden</Label>
-                      <p className="font-medium">{formatDate(orderData.transport_details?.datum_laden)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Tijd van - tot</Label>
-                      <p className="font-medium">
-                        {displayValue(orderData.transport_details?.tijd_van)} - {displayValue(orderData.transport_details?.tijd_tot)}
-                      </p>
-                    </div>
-                  </div>
-                  <Separator className="my-2" />
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Contactpersoon</Label>
-                    <p className="font-medium">{displayValue(orderData.laad_locatie?.contactpersoon)}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Adres</Label>
-                    <p className="font-medium">{displayValue(orderData.laad_locatie?.straat)}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Postcode</Label>
-                      <p className="font-medium">{displayValue(orderData.laad_locatie?.postcode)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Plaats</Label>
-                      <p className="font-medium">{displayValue(orderData.laad_locatie?.plaats)}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Land</Label>
-                    <p className="font-medium">{displayValue(orderData.laad_locatie?.land)}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* PRODUCTEN & LOSSEN side by side */}
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-              {/* PRODUCTEN */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-green-700 text-base border-l-4 border-green-700 pl-3">
-                    PRODUCTEN ({orderData.goederen?.length || 0})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {orderData.goederen && orderData.goederen.length > 0 ? (
-                    orderData.goederen.map((item, index) => (
-                      <div key={index} className="space-y-2 text-sm">
-                        {index > 0 && <Separator />}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Omschrijving</Label>
-                            <p className="font-medium">{displayValue(item.omschrijving)}</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Aantal</Label>
-                            <p className="font-medium">{displayValue(item.aantal)}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Gewicht</Label>
-                          <p className="font-medium">{item.gewicht_kg ? `${item.gewicht_kg} kg` : "-"}</p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Geen producten opgegeven</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* LOSSEN */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-green-700 text-base border-l-4 border-green-700 pl-3">
-                    LOSSEN
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Contactpersoon / Ontvanger</Label>
-                    <p className="font-medium">{displayValue(orderData.los_locatie?.contactpersoon)}</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Adres</Label>
-                    <p className="font-medium">{displayValue(orderData.los_locatie?.straat)}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Postcode</Label>
-                      <p className="font-medium">{displayValue(orderData.los_locatie?.postcode)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Plaats</Label>
-                      <p className="font-medium">{displayValue(orderData.los_locatie?.plaats)}</p>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Land</Label>
-                    <p className="font-medium">{displayValue(orderData.los_locatie?.land)}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          {/* Editable Form - Always in edit mode */}
+          <OrderForm order={order} />
         </div>
       </div>
     </div>

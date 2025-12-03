@@ -87,16 +87,6 @@ export function OrderActions({ orderId, currentStatus }: OrderActionsProps) {
         </Button>
       )}
 
-      {/* Bewerken - placeholder for now */}
-      <Button 
-        variant="secondary" 
-        size="sm" 
-        className="bg-yellow-400 text-black hover:bg-yellow-500"
-        disabled={isPending || isDeleting}
-      >
-        BEWERKEN
-      </Button>
-
       {/* Verwijderen */}
       {!showDeleteConfirm ? (
         <Button 

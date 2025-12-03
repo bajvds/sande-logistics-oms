@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { updateOrderStatus, deleteOrder } from '@/lib/data/orders';
+import { updateOrderStatus, deleteOrder, updateOrder } from '@/lib/data/orders';
+import { AIOrderData } from '@/types';
 
 /**
  * Server Action: Update order status to "In Behandeling"
@@ -48,4 +49,20 @@ export async function deleteOrderAction(orderId: number) {
   redirect('/orders');
 }
 
+/**
+ * Server Action: Update full order data
+ */
+export async function updateOrderAction(
+  orderId: number,
+  updates: { status?: string; order_data?: AIOrderData }
+) {
+  try {
+    await updateOrder(orderId, updates);
+    revalidatePath('/orders');
+    revalidatePath(`/orders/${orderId}`);
+  } catch (error) {
+    console.error('Failed to update order:', error);
+    throw new Error('Kon order niet bijwerken');
+  }
+}
 

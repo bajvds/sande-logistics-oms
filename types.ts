@@ -44,4 +44,11 @@ export interface DatabaseOrderTableRow {
   email_body: string | null; // De volledige email tekst (optioneel)
   pdf_url: string | null; // De link naar de PDF in Supabase Storage
   order_data: AIOrderData | null; // De JSONB kolom - kan leeg/null zijn
+  // Geocoding velden (van HERE Maps API via n8n)
+  laad_lat: number | null;
+  laad_lng: number | null;
+  los_lat: number | null;
+  los_lng: number | null;
+  laad_adres_volledig: string | null;
+  los_adres_volledig: string | null;
 }

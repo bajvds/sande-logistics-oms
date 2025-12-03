@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Order Hamster - OMS",
+  title: "Sande Logistics Orders",
   description: "Order Management System voor Sande Logistics",
 };
 
